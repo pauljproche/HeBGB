@@ -1,4 +1,4 @@
-# HeBGB - Spring 2022
+# HeBGB
 
 CS107: Compilers Project <br>
 Names: Craig Cagner, Sam Cohen, James Eidson, Paul Roche <br>
