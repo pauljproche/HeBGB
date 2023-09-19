@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#Change path depending on directory
+LLC="llc"
+#LLC="/usr/local/opt/llvm/bin/llc"
+
+if [ $# -eq 0 ]
+then
+  echo "Usage: HeBGB source_file.hebgb"
+  exit 2
+fi
+
+dune exec ./toplevel.exe $1 > $1.ll
+if [ $? -ne 0 ]
+then
+    #Command failed, output the error to stdout
+    cat $1.ll
+    exit 1
+fi
+$LLC "-relocation-model=pic" $1.ll -o $1.s
+cc $1.s builtin.o
+#rm -f $1.ll $1.s

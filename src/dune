@@ -1,0 +1,7 @@
+(ocamllex scanner)
+(ocamlyacc parser)
+
+(executable
+ (name toplevel)
+ (libraries llvm))
+ 
