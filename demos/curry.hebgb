@@ -1,0 +1,8 @@
+int -> (int -> int) add_three (int a) ->
+  int -> int add_two (int b) ->
+    int add_one (int c) ->
+      a + b + c in
+    add_one in
+  add_two in
+p(((add_three(1))(2))(3))
+

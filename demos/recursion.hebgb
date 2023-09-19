@@ -1,0 +1,6 @@
+int fact(int n) ->
+  int do_recursive_call(int n) ->
+    fact(n - 1) in
+  if n == 0 do 1
+  else n * do_recursive_call(n) in
+p(fact(10))
