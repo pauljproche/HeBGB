@@ -1,0 +1,3 @@
+int myprint(int n) ->
+  p(n) in
+myprint(5)

@@ -1,0 +1,4 @@
+Error!
+Id (foo)
+
+foo is unbound

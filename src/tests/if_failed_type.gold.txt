@@ -1,0 +1,9 @@
+Error!
+If
+|-- Infix ( < )
+|   |-- Id (a)
+|   +-- Int (0)
+|-- Str ("string_not_int")
++-- Int (100)
+
+both branches of an if expression must have the same type

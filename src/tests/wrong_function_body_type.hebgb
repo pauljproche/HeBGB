@@ -1,0 +1,4 @@
+int foo(int a) ->
+        int inside_fun(int n) -> 100 in
+        inside_fun in
+p(foo(6))

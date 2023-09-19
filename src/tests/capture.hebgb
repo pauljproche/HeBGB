@@ -1,0 +1,5 @@
+int -> int make_adder(int amount) ->
+  int add_one(int n) -> n + amount in
+  add_one in
+int -> int f <- make_adder(3) in
+p(f(6))

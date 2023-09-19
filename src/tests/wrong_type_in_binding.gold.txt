@@ -1,0 +1,4 @@
+Error!
+Id (my_fun)
+
+uh_oh has type INT but it is assigned to a value of type (INT) -> INT

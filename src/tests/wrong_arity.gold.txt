@@ -1,0 +1,6 @@
+Error!
+App
+|-- Id (add2)
++-- Int (1)
+
+function of type (INT, INT) -> INT was applied with incorrect number of arguments (expected 2 but got 1

@@ -1,0 +1,4 @@
+int fact(int n) ->
+  if n == 0 do 1
+  else n * fact(n - 1) in
+p(fact(6))

@@ -1,0 +1,4 @@
+int a <- 20 in
+int clmp_a <- if a < 0 do 0 else
+if a > 100 do 100 else a in
+p(clmp_a)

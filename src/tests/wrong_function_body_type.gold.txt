@@ -1,0 +1,12 @@
+Error!
+Fun foo returns: INT args: INT a
+|-- Fun inside_fun returns: INT args: INT n
+|   |-- Int (100)
+|   +-- Id (inside_fun)
++-- App
+    |-- Id (p)
+    +-- App
+        |-- Id (foo)
+        +-- Int (6)
+
+foo's body has type (INT) -> INT but INT was expected

@@ -1,0 +1,5 @@
+int -> int give_add_one() ->
+  int add_one(int n) -> n + 1 in
+  add_one in
+int -> int f <- give_add_one() in
+p(f(41))

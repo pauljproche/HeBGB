@@ -1,0 +1,2 @@
+int add_one(int n) -> n + 1 in
+p(add_one(3))

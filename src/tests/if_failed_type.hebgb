@@ -1,0 +1,3 @@
+int a <- 20 in
+int clmp_a <- if a < 0 do "string_not_int" else 100 in
+p(clmp_a)

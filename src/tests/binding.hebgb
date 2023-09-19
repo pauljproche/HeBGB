@@ -1,0 +1,5 @@
+int x <- 5 in
+int y <- 6 in
+int z <-
+  int a <- x + y in a in
+p(z)

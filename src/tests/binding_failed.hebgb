@@ -1,0 +1,2 @@
+int -> int foo2 <- foo in
+p(foo2(2))
