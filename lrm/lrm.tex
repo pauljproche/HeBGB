@@ -1,0 +1,499 @@
+\documentclass[12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    }
+\usepackage[margin=1.0in]{geometry}
+\usepackage{listings}
+\usepackage{graphicx}
+\graphicspath{ {./} }
+
+%% Frames setup
+\usepackage[framemethod=TikZ]{mdframed}
+\mdfsetup{skipabove=\topskip,skipbelow=\topskip}
+
+%% Configure fonts
+\usepackage[default,scale=0.95]{opensans}
+\usepackage{inconsolata}
+\usepackage[T1]{fontenc}
+
+\begin{document}
+
+\definecolor{LightGray}{gray}{0.6}
+
+% +-------------------------------+
+% | Define HeBGB listing language |
+% +-------------------------------+
+\lstdefinelanguage{HeBGB}{
+    basicstyle=\ttfamily,
+    columns=fullflexible,
+    sensitive=false, % keywords are not case-sensitive  
+    keywords = {},
+    otherkeywords={ % punctuation marks
+        <-, <~, ?, :
+    },
+    keywordstyle=\color{Mahogany}\bfseries,
+    morekeywords=[2]{ % types
+        int, list, string,
+    },
+    keywordstyle=[2]\color{YellowGreen},
+    morekeywords=[3]{
+        in, continue, with, then
+    },
+    keywordstyle=[3]\color{Mahogany}\bfseries,
+    morecomment=[l]{;;},
+    commentstyle=\color{LightGray}\ttfamily\textit,
+    morestring=[b]", % strings are enclosed in double quotes
+    stringstyle=\color{OliveGreen}\ttfamily,
+    showspaces=false,
+    showstringspaces=false
+} % 
+
+% +----------------------------------------+
+% | Define production rule custom commands |
+% +----------------------------------------+
+\newcommand{\Comment}[1]{\color{LightGray}#1}
+\newcommand{\Term}[1]{\textbf{\color{Mahogany}\texttt{#1}}}
+\newcommand{\Non}[1]{\textit{#1}}
+\newcommand{\Eq}{$::=$}
+\newcommand{\Or}{$|$}
+
+% +-------+
+% | Title |
+% +-------+
+\begin{center}
+\includegraphics[width=2cm]{logo.png}
+
+\bigskip
+\begin{bfseries}
+\begin{Large}The HeBGB Programming Language\end{Large}
+\end{bfseries}
+
+\bigskip
+Craig Cagner, Sam Cohen, James Eidson, and Paul Roche
+
+\bigskip
+Spring, 2022
+\end{center}
+
+% +---------------------------------+
+% | Create the rule box environment |
+% +---------------------------------+
+%% Make a new counter to keep track of the current
+%% grammar rule
+\newcounter{rule}[section]\setcounter{rule}{0}
+\renewcommand{\therule}{\arabic{section}.\arabic{rule}}
+
+\newenvironment{rule_box}[1][]{
+\refstepcounter{rule}
+\ifstrempty{#1}%
+% if condition (without title)
+{\mdfsetup{%
+frametitle={%
+    \tikz[baseline=(current bounding box.east),outer sep=0pt]
+    \node[anchor=east,rectangle,fill=white]
+    {\strut \therule};}
+}%
+% else condition (with title)
+}{\mdfsetup{%
+frametitle={%
+    \tikz[baseline=(current bounding box.east),outer sep=0pt]
+    \node[anchor=east,rectangle,fill=white]
+    {\strut \therule:~#1};}%
+}%
+}%
+% Both conditions
+\mdfsetup{%
+    innertopmargin=10pt,linecolor=black,%
+    linewidth=1pt,topline=true,%
+    frametitleaboveskip=\dimexpr-\ht\strutbox\relax%
+}
+\begin{mdframed}[]\relax}{%
+\end{mdframed}}
+
+% +---------------------------------+
+% | Create the code box environment |
+% +---------------------------------+
+%% Make a new counter to keep track of the current
+%% code box
+\newcounter{codebox}[subsection]\setcounter{codebox}{0}
+\renewcommand{\thecodebox}{\arabic{section}.\arabic{subsection}.\arabic{codebox}}
+
+\newenvironment{code_box}{
+\refstepcounter{codebox}
+\mdfsetup{%
+frametitle={%
+    \tikz[baseline=(current bounding box.east),outer sep=0pt]
+    \node[anchor=east,rectangle,fill=white]
+    {\strut \thecodebox};}
+}%
+% Both conditions
+\mdfsetup{%
+    innertopmargin=10pt,linecolor=black,%
+    linewidth=1pt,topline=true,%
+    frametitleaboveskip=\dimexpr-\ht\strutbox\relax%
+}
+\begin{mdframed}[]\relax}{%
+\end{mdframed}}
+
+% +------------------------------+
+% | Document Content Begins Here |
+% +------------------------------+
+\section{Introduction}
+HeBGB is a programming language centered around first-class functions
+and first-class continuations. By exposing continuations to the user,
+HeBGB allows complex control structures such as iterators, co-routines,
+and exceptions to be implemented by user code.
+
+HeBGB programs are composed of expressions, and most bindings are immutable.
+HeBGB encourages a functional programming style, though variable assignment
+is possible and necessary to use some of the language features.
+The language has a small core of primitive functions and operations, which
+are meant to be used to build custom tools that are targeted towards
+the programmers' exact problem domain.
+\section{Lexical Elements}
+HeBGB programs are utf8-encoded text files. Every token in a valid
+HeBGB program is either a keyword, an identifier, punctuation, or a value
+literal. \ref{keywords} shows the 8 keywords in the language. 
+HeBGB programs contain lots of identifiers. Identifiers 
+are strings that aren't a keyword and don't contain 
+\Term{"}, \Term{(}, \Term{)}, \Term{\{}, \Term{\}}, \Term{[}, or \Term{]}, 
+and are not valid representations of integer literals. 
+HeBGB's syntax also includes numerous punctuation marks. These
+can also be considered keywords in the language. Just like keywords,
+identifiers can \textit{contain} them, but cannot be \textit{equal} to them.
+
+\begin{rule_box}[Keywords]
+\label{keywords}
+\Term{in} \qquad \Term{continue} \qquad \Term{with} \qquad \Term{then} \qquad
+\Term{int} \qquad \Term{string} \qquad \Term{cont} \qquad \Term{list}
+\end{rule_box}
+
+There are 4 types of value literals in HeBGB. There are integer literals,
+list literals, tuple literals, and string literals. Integer literals are
+a sequence of decimal characters (\Term{0}-\Term{9}) optionally prefixed
+by a negation mark (\Term{-}). List and Tuple literals are described
+in \ref{productions:helpers}. String literals are written as a \Term{"},
+followed by a list of characters, followed by a closing \Term{"}.
+
+\section{Formal Grammar}
+
+\begin{rule_box}[Expressions]
+
+\begin{tabular}{r c l r}
+\Non{exp} & \Eq & \Non{name} \\
+          & \Or & \Non{const} \\
+          & \Or & \Term{(} \Non{exp} \Term{)} & \Comment{grouping} \\
+          & \Or & \Non{exp} \Term{(} \Non{args} \Term{)} & \Comment{$\lambda$ application} \\
+          & \Or & \Non{exp} \Term{()} \\
+          & \Or & \Non{ty} \Non{name} \Term{<-} \Non{exp} \Term{in} \Non{exp} & 
+          \Comment{let binding}\\
+          & \Or & \Non{name} \Term{<\char`~} \Non{exp} \Term{in} \Non{exp} & 
+          \Comment{variable assignment}\\
+          & \Or & \Non{ty} \Non{name} \Term{(} \Non{params} \Term{) ->} 
+          \Non{exp} \Term{in} \Non{exp} & 
+          \Comment{$\lambda$ binding}\\
+          & \Or & \Non{ty} \Non{name} \Term{() ->} 
+          \Non{exp} \Term{in} \Non{exp} \\
+          & \Or & \Non{ty} \Non{name} \Term{<- continue with} \Non{name} \Term{in} \Non{exp} 
+          \Term{then} \Non{exp} & \Comment{continuation} \\
+          & \Or & \Term{if} \Non{exp} \Term{do} \Non{exp} \Term{else} \Non{exp} & \Comment{conditional}\\
+          & \Or & \Non{infix}\\\\
+\Non{infix} & \Eq & \Non{exp} \Term{+} \Non{exp}
+            ~\Or~ \Non{exp} \Term{-} \Non{exp}
+            ~\Or~ \Non{exp} \Term{*} \Non{exp} \\
+            & \Or & \Non{exp} \Term{/} \Non{exp}
+            ~\Or~ \Non{exp} \Term{\%} \Non{exp}
+            ~\Or~ \Non{exp} \Term{\{} \Non{exp} \\
+            & \Or & \Non{exp} \Term{\}} \Non{exp}
+            ~\Or~ \Non{exp} \Term{<=} \Non{exp}
+            ~\Or~ \Non{exp} \Term{>=} \Non{exp} \\
+            & \Or & \Non{exp} \Term{=} \Non{exp}
+            ~\Or~ \Non{exp} \Term{!=} \Non{exp}
+            ~\Or~ \Non{exp} \Term{||} \Non{exp} \\
+            & \Or & \Non{exp} \Term{\&\&} \Non{exp}
+\end{tabular}
+\end{rule_box}
+\begin{rule_box}[Types]
+\begin{tabular}{r c l r}
+\Non{ty} & \Eq & \Term{int} \\
+         & \Or & \Term{string} \\
+         & \Or & \Term {cont} & \Comment{The type of continuation values}\\
+         & \Or & \Non{ty} \Term{list} & \Comment{The type of lists}\\
+         & \Or & \Non{ty} \Term{*} \Non{ty} & \Comment{The type of tuples}\\
+         & \Or & \Non{ty} \Term{->} \Non{ty} & \Comment{The type of functions}
+\end{tabular}
+\end{rule_box}
+\begin{rule_box}[Helpers]
+\label{productions:helpers}
+\begin{tabular}{r c l r}
+\Non{const} & \Eq & \Non{number} \\
+            & \Or & \Term{[} \Non{args} \Term{]} \\
+            & \Or & \Term{\{} \Non{args} \Term{\}} \\
+            & \Or & \Term{"}\Non{string}\Term{"} \\
+\end{tabular}
+\begin{tabular}{r c l r}
+\Non{args} & \Eq & \Non{exp} \\
+            & \Or & \Non{exp} \Term{,} \Non{args} \\
+\end{tabular}
+\begin{tabular}{r c l r}
+\Non{params} & \Eq & \Non{ty} \Non{exp} \\
+             & \Or & \Non{ty} \Non{exp} \Term{,} \Non{params} \\
+\end{tabular}
+\end{rule_box}
+\section{Types and Values}
+Every HeBGB program has just 6 kinds of values. There are integers (\Term{int}),
+strings (\Term{string}), continuation values (\Term{cont}), 
+lists (\Non{a} \Term{list}), tuples (\Non{a} \Term{*} \Non{b}), 
+and function types (\Non{a} \Term{->} \Non{b}). Lists, tuples, and
+function types may be \textit{composed} to yield more complicated types.
+The types of the language closely resemble the values that they represent.
+To this end, HeBGB's type system is structural; types are considered compatible
+if their algebraic representations are equal, and there is no way to
+name a type in HeBGB.
+\section{Expression Semantics}
+\subsection{Constants}
+HeBGB has four types of constants: integers, lists, tuples, and strings.
+\ref{code:constants} shows the syntax for how to write all four. On each
+line, the \Term{<-} operator is used to bind a name to the value of each
+expression on the right-hand side. Also, note that before each name, it is 
+necessary to name the type of the value being bound. The compiler will 
+ensure that the types mentioned are consistent with the other expressions 
+in the program.
+\begin{code_box}
+\label{code:constants}
+\begin{lstlisting}[language=HeBGB]
+;; The integer 42 is bound to the name myint
+int myint <- 42 in
+;; We can also bind lists
+int list ints <- [1, 2, 3] in
+;; And tuples...
+int * int origin <- {0, 0} in
+;; And even tuples of lists...
+int list * int list nums <- {[0, 2], [1, 3]} in
+string message <- "Hello, world" in 0
+\end{lstlisting}
+\end{code_box}
+A HeBGB program can be seen as one big expression, the value of which
+evaluates to the exit code of the program. In the final line of
+\ref{code:constants} we find the constant \texttt{0} which is the
+exit code of the program.
+\subsection{Names and Bindings}
+In HeBGB, most expressions must be bound to a name. Names are
+bound to values with the \Term{<-} operator. It is also possible to bind
+a new value to a previously bound name with the \Term{<\char`~} operator.
+Note that re-binding a name with the \Term{<\char`~} operator is a
+true assignment; future accesses of the name will yield the \textit{new}
+value of the name.
+
+Names bound by \Term{<-} are visible to every sub-expression of the
+binding after the \Term{in} keyword. 
+\ref{code:scope} gives an example of how names can be
+scoped to sub-expressions within a program. In the example,
+the definition of \texttt{e} has \texttt{a} and \texttt{b} in scope,
+but \texttt{c} and \texttt{d} are not in scope, because they are
+bound only in the definition of \texttt{b}.
+
+The HeBGB compiler can determine at compile-time which names will
+be in scope for any expression in the program. Programs that mention
+names that are not in scope will be rejected.
+\begin{code_box}
+\label{code:scope}
+\begin{lstlisting}[language=HeBGB]
+int a <- 2 in
+int b <- 
+  int c <- 42 in    ;; a is in scope
+  int d <- 0  in    ;; a and c are in scope
+  c + d in          ;; a, c, and d are in scope
+int e <- 3 in a + b ;; a and b are in scope
+\end{lstlisting}
+\end{code_box}
+\subsection{Conditional Expressions}
+The conditional expression is used to choose an expression to be
+evaluated at run-time. The conditional expression has three sub-expressions:
+the test, the true branch, and the false branch. When evaluated, the
+if expression evaluates the test expression. If the test expression yields
+the integer value \texttt{0}, the false branch is evaluated. Any other
+value will result in the true branch being evaluated.
+
+Example \ref{code:conditional} shows an expression which clamps
+integers between 0 and $\infty$. In the test of the conditional,
+a comparison operator is used to determine if the value bound to
+\texttt{a} is less than 0. If it is, \texttt{0} is returned. Else,
+\texttt{a} must be equal to or greater than 0, so its value is
+returned unchanged.
+\begin{code_box}
+\label{code:conditional}
+\begin{lstlisting}[language=HeBGB]
+int a <- -10 in
+int pos_a <- if a < 0 do 0 else a in
+pos_a ;; pos_a is 0
+\end{lstlisting}
+\end{code_box}
+The test, true branch, and false branch sub-expressions of a conditional
+can contain arbitrary expressions, including comparisons, bindings, and
+other conditionals. Example \ref{code:conditional2} is another 
+clamping expression, except this time \texttt{a} is clamped between 
+0 and 100. In \ref{code:conditional2}, we use nested conditional expressions
+to perform checks on the upper and lower bound of the clamp. 
+
+\begin{code_box}
+\label{code:conditional2}
+\begin{lstlisting}[language=HeBGB]
+int a <- 20 in
+int clmp_a <- if a < 0 do 0 else
+              if a > 100 do 100 else a
+clmp_a ;; clmp_a is 20
+\end{lstlisting}
+\end{code_box}
+
+\subsection{Function Definition and Application}
+Functions are one of the central features of HeBGB. In HeBGB, functions
+are first-class values that can be passed around to other functions
+and bound to names. In \ref{code:succ}, a function is defined that
+accepts an integer and returns its successor.
+\begin{code_box}
+\label{code:succ}
+\begin{lstlisting}[language=HeBGB]
+int succ(int n) -> n + 1 in
+int num <- 0 in
+succ(num)
+\end{lstlisting}
+\end{code_box}
+The first line of \ref{code:succ} defines a function, \texttt{succ},
+which accepts a single argument of type \texttt{int}. The body
+of the function is a single expression that is evaluated when the
+function is called. Note that \texttt{succ} is a value like any other.
+As such, we can bind it to a new name and call \textit{that} function
+instead.
+\begin{code_box}
+\label{code:add-one}
+\begin{lstlisting}[language=HeBGB]
+int succ(int n) -> n + 1 in
+int -> int add-one <- succ in
+int num <- 0 in
+add-one(num)
+\end{lstlisting}
+\end{code_box}
+\ref{code:add-one} behaves identically to \ref{code:succ}. On the
+second line of \ref{code:add-one}, we have re-bound \texttt{succ} to
+\texttt{add-one}, copying the underlying function value. Note that
+since \texttt{succ} is still bound, we have created an environment where
+\texttt{succ} and \texttt{add-one} are effectively aliases to the same
+function.
+
+On line 2 of \ref{code:add-one} we are required to name the type
+of \texttt{add-one} when it is bound to \texttt{succ}. The types
+of functions are written \texttt{a -> b} where \texttt{a} is the
+type of the first argument and \texttt{b} is the return type. If a
+function takes multiple arguments, more arrows are used between each
+argument type. For example, the type of a function that takes a
+string and two ints and returns a string list is
+\texttt{string -> int -> int -> string list}.
+
+Function application is performed by writing an argument list next
+to an expression. Argument lists are comma-separated lists of expressions
+surrounded by parenthesis. In \ref{code:succ}, \texttt{succ} is applied
+with \texttt{num} by the expression \texttt{succ(num)}. Functions need
+not be simple identifiers, however.
+
+Say we wanted to write a function that could give us the nth successor
+to a number, not just the 1st successor. We could write a function that
+takes two arguments, but in HeBGB, we can also write a function that
+returns another function. \ref{code:nsucc} gives such an example.
+\begin{code_box}
+\label{code:nsucc}
+\begin{lstlisting}[language=HeBGB]
+int -> int nsucc(int n) ->
+  int succ(int p) -> n + p in
+  succ in
+int -> int five_succ <- nsucc(5) in
+five_succ(10) ;; is 15
+\end{lstlisting}
+\end{code_box}
+let's break down example \ref{code:nsucc}:\\
+\begin{tabular}{p{0.5\linewidth} p{0.4\linewidth}}
+\begin{lstlisting}[language=HeBGB, escapechar=!]
+int -> int nsucc(int n) ->
+  !\color{LightGray}{int succ(int p) -> n + p in}!
+  !\color{LightGray}{succ}! in
+!\color{LightGray}{int -> int five\_succ <- nsucc(5) in}!
+!\color{LightGray}{five\_succ(10)}!
+\end{lstlisting} & 
+We define a function, \texttt{nsucc} which takes an integer and
+returns a function of type \texttt{int -> int}.
+\\
+\end{tabular}
+
+\noindent
+\begin{tabular}{p{0.5\linewidth} p{0.4\linewidth}}
+\begin{lstlisting}[language=HeBGB, escapechar=!]
+!\color{LightGray}{int -> int nsucc(int n) ->}!
+  int succ(int p) -> n + p in
+  succ in
+!\color{LightGray}{int -> int five\_succ <- nsucc(5) in}!
+!\color{LightGray}{five\_succ(10)}!
+\end{lstlisting} & 
+The body of \texttt{nsucc} is itself a function
+which adds its argument, \texttt{p}, to \texttt{n}. Since \texttt{n} 
+is \textit{captured} by \texttt{succ}, it is available to the body
+of \texttt{succ} even when \texttt{nsucc} is no longer in scope.
+\\
+\end{tabular}
+
+\noindent
+\begin{tabular}{p{0.5\linewidth} p{0.4\linewidth}}
+\begin{lstlisting}[language=HeBGB, escapechar=!]
+!\color{LightGray}{int -> int nsucc(int n) ->}!
+  !\color{LightGray}{int succ(int p) -> n + p in}!
+  !\color{LightGray}{succ in}!
+int -> int five_succ <- nsucc(5) in
+five_succ(10)
+\end{lstlisting} & 
+\texttt{five\_succ} binds a closure of \texttt{succ} where \texttt{n} is
+equal to 5. Applying \texttt{five\_succ} yields 15.
+\\
+\end{tabular}
+\subsection{Continuations}
+Continuations in HeBGB are created with the \Term{continue with} keyword.
+\Term{continue with} is followed by a \texttt{name}, a handler body,
+$\texttt{e}_1$, and a following expression, $\texttt{e}_2$.
+When \Term{continue with} is evaluated, a continuation representing the
+current environment is captured and bound to \texttt{name}. Immediately
+after capture, $\texttt{e}_1$ is evaluated with \texttt{name} bound to
+the continuation's value. The continuation value behaves as a function to
+the user's code; continuation values can only be applied, and they only
+accept applications of a single argument. Once $\texttt{e}_1$ has been
+evaluated, $\texttt{e}_2$ is evaluated in the same manner as other bindings 
+in the language.
+
+If the continuation value bound to \texttt{name} is applied at any time
+in the program's execution following its introduction, 
+the context captured by the continuation is restored, and the value 
+of the argument passed to the application is returned from the 
+\Term{continue with} expression that generated the continuation value.
+
+Example \ref{code:safe-divide} shows how continuations
+can be used to alter the control flow of a HeBGB program.
+\begin{code_box}
+\label{code:safe-divide}
+\begin{lstlisting}[language=HeBGB]
+int safe-divide(int a, int b) ->
+  int result <- continue with k in
+    a / (if zero(b) do k(-1) else b)
+  then result in
+safe-divide(10, 0) ;; returns -1
+\end{lstlisting}
+\end{code_box}
+\ref{code:safe-divide} implements a function, \texttt{safe-divide},
+which avoids divide-by-zero errors by returning \texttt{-1} when
+a zero divisor is detected. This example emulates a basic form
+of return semantics from imperative languages where after return
+has been called (roughly equivalent to \texttt{k(-1)} in this
+example), no more calculations in the body of the function are
+attempted, and the result is ``escaped'' immediately from the
+surrounding code.
+\end{document}
